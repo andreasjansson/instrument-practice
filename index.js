@@ -12,7 +12,7 @@ var note;
 var noteAccidental = '#';
 var streak = 0;
 var maxPoolSize = 7;
-var avgPoolSize = 50;
+var avgPoolSize = 30;
 var avgFactor = 3;
 var smoothing = 0.01;
 var debug = false;
