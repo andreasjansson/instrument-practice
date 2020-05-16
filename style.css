@@ -1,0 +1,109 @@
+html, body {
+    background-color: #EEE;
+    padding: 0;
+    margin: 0;
+    font-family: 'Italianno', cursive;
+}
+
+.score {
+    position: absolute;
+    top: 0;
+    left: 30px;
+}
+
+.line, .ledger {
+    height: 4px;
+    margin-bottom: 40px;
+    margin-top: 40px;
+    background-color: black;
+}
+
+.line {
+    width: 300px;
+}
+
+.ledger {
+    width: 80px;
+    margin-left: 110px;
+    visibility: hidden;
+}
+
+.octava {
+    font-size: 40px;
+    visibility: hidden;
+}
+
+.octava-above {
+    position: absolute;
+    top: 116px;
+}
+
+.octava-below {
+    position: absolute;
+    top: 360px;
+}
+
+.note-name {
+    font-size: 80px;
+    position: absolute;
+    top: 180px;
+    left: 380px;
+}
+
+.note {
+    position: absolute;
+    left: 60px;
+    visibility: hidden;
+}
+
+.breve {
+    height: 80px;
+}
+
+.accidental {
+    width: 50px;
+    height: 80px;
+    font-size: 60px;
+    font-weight: bold;
+    float: left;
+    margin-top: -6px;
+}
+
+#actual .note-name {
+    top: 260px;
+    color: #F55;
+}
+
+#actual .breve, #actual .accidental {
+    color: #F55;
+}
+
+#nice {
+    font-size: 240px;
+    position: absolute;
+    top: 126px;
+    left: 60px;
+    display: none;
+}
+
+#range {
+    font-size: 30px;
+    position: absolute;
+    left: 400px;
+    top: 400px;
+}
+
+#range label {
+    display: block;
+    width: 80px;
+    float: left;
+}
+
+#range select {
+    display: block;
+    font-size: 25px;
+}
+
+#range .row {
+    clear: both;
+}
