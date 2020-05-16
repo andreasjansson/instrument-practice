@@ -12,12 +12,13 @@ var note;
 var noteAccidental = '#';
 var streak = 0;
 var maxPoolSize = 7;
-var avgPoolSize = 30;
-var avgFactor = 4;
+var avgPoolSize = 50;
+var avgFactor = 3;
 var smoothing = 0.01;
+var debug = false;
 
-const surface = { name: 'Bar chart', tab: 'Charts' };
-const surface2 = { name: 'Bar chart 2', tab: 'Charts' };
+const surface = { name: 'Spectrum', tab: 'Debugger' };
+const surface2 = { name: 'Peaks', tab: 'Debugger' };
 
 nextNote();
 
@@ -41,10 +42,11 @@ function step(){
   analyzer.getFloatFrequencyData(fft);
   t = tf.sqrt(tf.pow(10, tf.div(fft, 20))).dataSync();
 
-  //render(t, surface);
-
   peaks = findPeaks(t);
-  //render(peaks.vec, surface2);
+  if (debug) {
+    render(t, surface);
+    render(peaks.vec, surface2);
+  }
 
   if (peaks.idx.length > 0) {
     freq = tf.mul(peaks.idx[0], sampleRate).div(fftSize);
