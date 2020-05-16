@@ -1,6 +1,6 @@
 # Instrument practice
 
-https://infallible-hoover-def51b.netlify.app/
+https://instrument-practice.netlify.app
 
 When you have a new instrument, you might not know where all the notes are. I just bought myself a button accordion and I'm very rusty.
 
