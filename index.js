@@ -272,7 +272,7 @@ function updateRange() {
   Cookies.set('range-low', low);
   Cookies.set('range-high', high);
 
-  if (low > high) {
+  if (high < low + 1) {
     alert("High must be > low");
     $('#range-low').val('' + range.low);
     $('#range-high').val('' + range.high);
