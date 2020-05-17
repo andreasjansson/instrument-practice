@@ -37,6 +37,8 @@ $(function() {
 });
 
 function start() {
+  fixSafari();
+
   audioContext = new AudioContext({sampleRate: sampleRate});
   analyzer = audioContext.createAnalyser();
   scriptProcessor = audioContext.createScriptProcessor(bufferSize, 1, 1);
@@ -65,7 +67,6 @@ function startAubio() {
 }
 
 function startRecord() {
-  console.log('here');
   navigator.mediaDevices.getUserMedia({audio: true}).then(function(stream) {
     audioContext.createMediaStreamSource(stream).connect(analyzer);
     analyzer.connect(scriptProcessor);
@@ -353,5 +354,31 @@ function setDefaults() {
   if (scale) {
     $('#scale').val(scale);
     updateScale();
+  }
+}
+
+function fixSafari() {
+  window.AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!window.AudioContext) {
+    alert('Web audio is not supported on this browser');
+    return;
+  }
+
+  if (navigator.mediaDevices === undefined) {
+    navigator.mediaDevices = {};
+  }
+
+  if (navigator.mediaDevices.getUserMedia === undefined) {
+    navigator.mediaDevices.getUserMedia = function(constraints) {
+      const getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+
+      if (!getUserMedia) {
+        alert('getUserMedia is not implemented in this browser');
+      }
+
+      return new Promise(function(resolve, reject) {
+        getUserMedia.call(navigator, constraints, resolve, reject);
+      })
+    }
   }
 }
