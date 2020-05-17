@@ -43,7 +43,7 @@ function start() {
   analyzer = audioContext.createAnalyser();
   scriptProcessor = audioContext.createScriptProcessor(bufferSize, 1, 1);
 
-  $(window).on('click', startAubio);
+  $('body').on('click', startAubio);
   $(window).on('keydown', startAubio);
 }
 
