@@ -13,6 +13,10 @@ var DIATONIC = 'Diatonic';
 var scales = [CHROMATIC, DIATONIC];
 var scale = CHROMATIC;
 var bufferSize = 4096;
+//var silenceThreshold = -30;
+//var confidenceThreshold = 0.5;
+var silenceThreshold = -50;
+var confidenceThreshold = 0.1;
 var audioContext;
 var analyzer;
 var pitchDetector;
@@ -61,7 +65,7 @@ function startAubio() {
       1,
       audioContext.sampleRate
     );
-    pitchDetector.setSilence(-30);
+    pitchDetector.setSilence(silenceThreshold);
     startRecord();
   });
 }
@@ -83,7 +87,7 @@ function audioProcess(event) {
   var freq = self.pitchDetector.do(
     event.inputBuffer.getChannelData(0)
   );
-  if (freq && pitchDetector.getConfidence() > .5) {
+  if (freq && pitchDetector.getConfidence() > confidenceThreshold) {
     var actualNote = Math.round(Math.log2(freq / a4freq) * 12 + a4midi);
     displayNote(actualNote, $('#actual'), noteAccidental);
     checkNote(actualNote);
