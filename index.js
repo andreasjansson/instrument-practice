@@ -1,11 +1,12 @@
-var sampleRate = 8192;
-var fftSize = 2048;
+var sampleRate = 22050;
 var a4freq = 440.0;
 var c0midi = 12;
+var a4midi = 69;
 var log2 = tf.log(2);
 var range = {'low': 52, 'high': 89}
 var noteNames = getNoteNames();
-var aCtx;
+var instrumentRanges = getInstrumentRanges();
+var audioContext;
 var analyzer;
 var microphone;
 var note;
@@ -14,101 +15,104 @@ var streak = 0;
 var maxPoolSize = 7;
 var avgPoolSize = 30;
 var avgFactor = 3;
-var smoothing = 0.01;
 var debug = false;
+var CHROMATIC = 'Chromatic';
+var DIATONIC = 'Diatonic';
+var scales = [CHROMATIC, DIATONIC];
+var scale = CHROMATIC;
 
-const surface = { name: 'Spectrum', tab: 'Debugger' };
-const surface2 = { name: 'Peaks', tab: 'Debugger' };
+var bufferSize = 4096;
+var pitchDetector;
+var scriptProcessor;
 
-nextNote();
+$(function() {
+  $('#range-low').change(updateRange);
+  $('#range-high').change(updateRange);
+  $('#range-instrument').change(updateInstrument);
+  $('#scale').change(updateScale);
+  $('#skip a').on('click', function() { nextNote(); return false });
 
-navigator.mediaDevices.getUserMedia({audio: true}).then(function(stream) {
-  aCtx = new AudioContext({sampleRate: sampleRate});
-  analyzer = aCtx.createAnalyser();
-  analyzer.fftSize = fftSize;
-  analyzer.smoothingTimeConstant = smoothing;
-  microphone = aCtx.createMediaStreamSource(stream);
-  microphone.connect(analyzer);
-  // analyzer.connect(aCtx.destination);
-  step();
-}).catch(function(err) {
-  console.log(err);
+  setDefaults();
+
+  start();
 });
 
-function step(){
-  var timeout = 200;
+function start() {
+  audioContext = new AudioContext({sampleRate: sampleRate});
+  analyzer = audioContext.createAnalyser();
+  scriptProcessor = audioContext.createScriptProcessor(bufferSize, 1, 1);
 
-  fft = new Float32Array(analyzer.frequencyBinCount);
-  analyzer.getFloatFrequencyData(fft);
-  t = tf.sqrt(tf.pow(10, tf.div(fft, 20))).dataSync();
+  $(window).on('click', startAubio);
+  $(window).on('keydown', startAubio);
+}
 
-  peaks = findPeaks(t);
-  if (debug) {
-    render(t, surface);
-    render(peaks.vec, surface2);
-  }
+function startAubio() {
+  $(window).off('click', startAubio);
+  $(window).off('keydown', startAubio);
 
-  if (peaks.idx.length > 0) {
-    freq = tf.mul(peaks.idx[0], sampleRate).div(fftSize);
-    midi = tf.log(freq.div(a4freq)).div(log2).mul(12).add(69);
-    var actualNote = Math.round(midi.dataSync());
+  $('#start').hide();
+  $('#contents').show();
+  audioContext.resume();
+  Aubio().then(function(aubio) {
+    pitchDetector = new aubio.Pitch(
+      //'default',
+      'yin',
+      self.bufferSize,
+      1,
+      audioContext.sampleRate
+    );
+    pitchDetector.setSilence(-30);
+    startRecord();
+  });
+}
+
+function startRecord() {
+  console.log('here');
+  navigator.mediaDevices.getUserMedia({audio: true}).then(function(stream) {
+    audioContext.createMediaStreamSource(stream).connect(analyzer);
+    analyzer.connect(scriptProcessor);
+    scriptProcessor.connect(audioContext.destination);
+
+    scriptProcessor.onaudioprocess = audioProcess;
+  }).catch(function(err) {
+    alert(err.name + '\n\n' + err.message);
+  });
+  nextNote();
+}
+
+function audioProcess(event) {
+  var freq = self.pitchDetector.do(
+    event.inputBuffer.getChannelData(0)
+  );
+  if (freq && pitchDetector.getConfidence() > .5) {
+    var actualNote = Math.round(Math.log2(freq / a4freq) * 12 + a4midi);
     displayNote(actualNote, $('#actual'), noteAccidental);
-    if (actualNote == note) {
-      actualGreen();
-      streak += 1;
-      if (streak == 2) {
-        streak = 0;
-        $('#nice').show();
-        analyzer.smoothingTimeConstant = 0;
-        microphone.disconnect(analyzer);
-        analyzer.getFloatFrequencyData(fft); // clear buffer
-        setTimeout(function() {
-          $('#nice').hide();
-          $('#actual').hide();
-          nextNote();
-          analyzer.getFloatFrequencyData(fft); // clear buffer
-        }, 1000);
-        timeout = 1500;
-        setTimeout(function() {
-          analyzer.smoothingTimeConstant = smoothing;
-          analyzer.getFloatFrequencyData(fft); // clear buffer
-          microphone.connect(analyzer);
-        }, timeout);
-      }
-    } else {
-      actualRed();
-      streak = 0;
-    }
+    checkNote(actualNote);
   } else {
     $('#actual').hide();
   }
-
-  setTimeout(step, timeout);
 }
 
-function render(arr, surface) {
-  var data = Array.from(arr).map(function(x, i) {
-    return {index: i, value: x}
-  });
-  tfvis.render.barchart(surface, data);
-}
-
-function findPeaks(vec) {
-  var t4d = tf.reshape(vec, [1, -1, 1, 1]);
-  var maxIdx = tf.maxPoolWithArgmax(t4d, [maxPoolSize, 1], [1, 1], 'same')['indexes'].dataSync();
-  var avg = t4d.avgPool([avgPoolSize, 1], [1, 1], 'same').dataSync();
-  var peakVec = tf.zeros([vec.length]).dataSync();
-  var peaks = [];
-  for (var i = 0; i < vec.length; i ++) {
-    var v = vec[i];
-    var a = avg[i];
-    var m = maxIdx[i];
-    if (m == i && v >= a * avgFactor) {
-      peakVec[i] = v;
-      peaks.push(i);
+function checkNote(actualNote) {
+  if (actualNote == note) {
+    actualGreen();
+    streak += 1;
+    if (streak == 2) {
+      streak = 0;
+      $('#nice').show();
+      audioContext.suspend();
+      setTimeout(function() {
+        $('#nice').hide();
+        $('#actual').hide();
+        console.log('nextnote');
+        audioContext.resume();
+        nextNote();
+      }, 1000);
     }
+  } else {
+    actualRed();
+    streak = 0;
   }
-  return {idx: peaks, vec: peakVec};
 }
 
 function getNoteNames() {
@@ -143,7 +147,11 @@ function getNoteNames() {
 }
 
 function nextNote() {
-  setNote(Math.floor(Math.random() * (range.high + 1 - range.low) + range.low));
+  var newNote = note;
+  while (newNote == note || (scale == DIATONIC && !isDiatonic(newNote))) {
+    newNote = Math.floor(Math.random() * (range.high + 1 - range.low) + range.low);
+  }
+  setNote(newNote);
 }
 
 function setNote(n) {
@@ -159,10 +167,12 @@ function displayNote(note, parent, useAccidental) {
     }
     return;
   }
+  /*
   if (note < range.low || note > range.high + 1) {
     console.log("Note is out of range: ", note);
     return;
   }
+*/
   parent.show();
 
   var name;
@@ -259,6 +269,8 @@ function actualColor(hex) {
 function updateRange() {
   var low = 1 * $('#range-low').val();
   var high = 1 * $('#range-high').val();
+  Cookies.set('range-low', low);
+  Cookies.set('range-high', high);
 
   if (low > high) {
     alert("High must be > low");
@@ -271,5 +283,81 @@ function updateRange() {
   range.high = high;
   if (note < range.low || note > range.high + 1) {
     nextNote();
+  }
+
+  var instr = 'custom';
+  for (var name in instrumentRanges) {
+    var r = instrumentRanges[name];
+    if (r[0] == low && r[1] == high) {
+      instr = name;
+      break;
+    }
+  }
+  $('#range-instrument').val(instr);
+}
+
+function updateInstrument() {
+  var name = $('#range-instrument').val();
+  if (name == 'custom') {
+    return;
+  }
+  var low = instrumentRanges[name][0];
+  var high = instrumentRanges[name][1];
+  $('#range-low').val(low);
+  $('#range-high').val(high);
+  updateRange();
+}
+
+function updateScale() {
+  scale = $('#scale').val();
+  console.log('scale', scale);
+  Cookies.set('scale', scale);
+  if (scale == DIATONIC) {
+    if (note && !isDiatonic(note)) {
+      nextNote();
+    }
+  }
+}
+
+function isDiatonic(n) {
+  return noteNames[n].length == 1;
+}
+
+function getInstrumentRanges() {
+  var nn = {}
+  for (var i in noteNames) {
+    var name = noteNames[i][0];
+    nn[name] = i;
+  }
+
+  return {
+    'Accordion': [nn['E3'], nn['F6']],
+    'Guitar': [nn['E2'], nn['E5']],
+    'Piano': [nn['A0'], nn['C8']],
+    'Clarinet': [nn['E3'], nn['C7']],
+    'Voice (bass)': [nn['E2'], nn['E4']],
+    'Voice (tenor)': [nn['C3'], nn['C5']],
+    'Voice (alto)': [nn['F3'], nn['F5']],
+    'Voice (soprano)': [nn['C4'], nn['C6']],
+  }
+}
+
+function setDefaults() {
+  var rangeLow = Cookies.get('range-low');
+  if (rangeLow) {
+    $('#range-low').val(rangeLow);
+  }
+  var rangeHigh = Cookies.get('range-high');
+  if (rangeHigh) {
+    $('#range-high').val(rangeHigh);
+  }
+  if (rangeLow || rangeHigh) {
+    updateRange();
+  }
+
+  var scale = Cookies.get('scale');
+  if (scale) {
+    $('#scale').val(scale);
+    updateScale();
   }
 }

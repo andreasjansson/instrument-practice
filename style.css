@@ -1,5 +1,5 @@
 html, body {
-    background-color: #EEE;
+    background-color: #efe5d5;
     padding: 0;
     margin: 0;
     font-family: 'Italianno', cursive;
@@ -95,8 +95,10 @@ html, body {
 
 #range label {
     display: block;
-    width: 80px;
+    width: 130px;
     float: left;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 25px;
 }
 
 #range select {
@@ -106,10 +108,58 @@ html, body {
 
 #range .row {
     clear: both;
+    margin-bottom: 5px;
 }
 
 #github {
     position: absolute;
     top: 0;
     right: 0;
+}
+
+#start {
+    width: 80vw;
+    height: 90vh;
+    background-color: #efe5d5;
+    font-size: 30px;
+    text-align: center;
+    padding-top: 10vh;
+    padding-left: 10vw;
+    padding-right: 10vw;
+    z-index: 100;
+}
+
+#start h1 {
+    font-size: 70px;
+    font-weight: normal;
+}
+
+.red {
+    color: #FF225F;
+}
+
+#start p {
+    font-family: 'Quicksand', sans-serif;
+}
+
+#contents {
+    display: none;
+}
+
+#skip {
+    position: absolute;
+    top: 200px;
+    left: 560px;
+}
+
+#skip a {
+    font-size: 20px;
+    font-family: 'Quicksand', sans-serif;
+    color: #888;
+    font-style: italic;
+    text-decoration: none;
+}
+
+#skip a:hover {
+    text-decoration: underline;
 }
