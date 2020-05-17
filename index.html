@@ -53,6 +53,17 @@
 
     <div id="range">
       <div class="row">
+        <label for="range-high">High</label>
+        <select id="range-high">
+          <script>
+            for (var i = 12; i < 120; i ++) {
+              var selected = i == range.high ? ' selected' : '';
+              document.write('<option value="' + i + '"' + selected + '>' + noteNames[i][0] + '</option>');
+            }
+          </script>
+        </select>
+      </div>
+      <div class="row">
         <label for="range-low">Low</label>
         <select id="range-low">
           <script>
@@ -63,21 +74,10 @@
           </script>
         </select>
       </div>
-      <div class="row">
-        <label for="range-high">High</label>
-        <select id="range-high">
-          <script>
-            for (var i = 12; i < 120; i ++) {
-              var selected = i == range.high ? ' selected' : '';
-              document.write('<option value="' + i + '"' + selected + '>' + noteNames[i][0] + '</option>');
-            }
-          </script>
-        </select>
-        <script>
-          $('#range-low').change(updateRange);
-          $('#range-high').change(updateRange);
-        </script>
-      </div>
+      <script>
+        $('#range-low').change(updateRange);
+        $('#range-high').change(updateRange);
+      </script>
       <br />
       <a href="#" id="debugger">Show debugger</a>
       <script>
