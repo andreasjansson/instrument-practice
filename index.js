@@ -2,28 +2,27 @@ var sampleRate = 22050;
 var a4freq = 440.0;
 var c0midi = 12;
 var a4midi = 69;
-var log2 = tf.log(2);
 var range = {'low': 52, 'high': 89}
 var noteNames = getNoteNames();
 var instrumentRanges = getInstrumentRanges();
-var audioContext;
-var analyzer;
-var microphone;
 var note;
 var noteAccidental = '#';
 var streak = 0;
-var maxPoolSize = 7;
-var avgPoolSize = 30;
-var avgFactor = 3;
-var debug = false;
 var CHROMATIC = 'Chromatic';
 var DIATONIC = 'Diatonic';
 var scales = [CHROMATIC, DIATONIC];
 var scale = CHROMATIC;
-
 var bufferSize = 4096;
+var audioContext;
+var analyzer;
 var pitchDetector;
 var scriptProcessor;
+
+if (location.hash == '#debug') {
+  window.onerror = function (errorMsg, url, lineNumber) {
+    alert('Error: ' + errorMsg + '\nScript: ' + url + '\nLine: ' + lineNumber);
+  }
+}
 
 $(function() {
   $('#range-low').change(updateRange);
@@ -55,7 +54,6 @@ function startAubio() {
   audioContext.resume();
   Aubio().then(function(aubio) {
     pitchDetector = new aubio.Pitch(
-      //'default',
       'yin',
       self.bufferSize,
       1,
@@ -167,12 +165,6 @@ function displayNote(note, parent, useAccidental) {
     }
     return;
   }
-  /*
-  if (note < range.low || note > range.high + 1) {
-    console.log("Note is out of range: ", note);
-    return;
-  }
-*/
   parent.show();
 
   var name;
