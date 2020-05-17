@@ -20,10 +20,8 @@ var analyzer;
 var pitchDetector;
 var scriptProcessor;
 
-var isSafari = /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && safari.pushNotification));
-
-if (isSafari) {
-  alert("The instrument detector doesn't work very well on Safari, but feel free to play around.");
+if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf("Chrome") == -1) {
+  alert("This doesn't work very well on Safari, but feel free to play around.");
 }
 
 if (location.hash == '#debug') {
