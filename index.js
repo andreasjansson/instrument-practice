@@ -339,6 +339,8 @@ function getInstrumentRanges() {
     'Voice (tenor)': [nn['C3'], nn['C5']],
     'Voice (alto)': [nn['F3'], nn['F5']],
     'Voice (soprano)': [nn['C4'], nn['C6']],
+    'Single octave (4)': [nn['C4'], nn['B4']],
+    'Single octave (5)': [nn['C5'], nn['B5']],
   }
 }
 
