@@ -19,8 +19,8 @@ var pitchDetector;
 var scriptProcessor;
 
 if (location.hash == '#debug') {
-  window.onerror = function (errorMsg, url, lineNumber) {
-    alert('Error: ' + errorMsg + '\nScript: ' + url + '\nLine: ' + lineNumber);
+  window.onerror = function (message, source, lineno, colno, error) {
+    alert(message + '\n\nSource: ' + source + '\nLine: ' + lineno + '\nError: ' + error);
   }
 }
 
