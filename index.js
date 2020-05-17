@@ -13,7 +13,7 @@ var DIATONIC = 'Diatonic';
 var scales = [CHROMATIC, DIATONIC];
 var scale = CHROMATIC;
 var bufferSize = 4096;
-var silenceThreshold = -30;
+var silenceThreshold = -50;
 var confidenceThreshold = 0.5;
 var audioContext;
 var analyzer;
