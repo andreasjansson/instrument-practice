@@ -54,7 +54,7 @@ function start() {
 }
 
 function startAubio() {
-  $(window).off('click', startAubio);
+  $('body').off('click', startAubio);
   $(window).off('keydown', startAubio);
 
   $('#start').hide();
