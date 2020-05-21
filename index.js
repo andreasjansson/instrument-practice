@@ -1,4 +1,4 @@
-var sampleRate = 22050;
+var sampleRate = 44100;
 var a4freq = 440.0;
 var c0midi = 12;
 var a4midi = 69;
